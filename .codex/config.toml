@@ -1,0 +1,7 @@
+# Portable MCP declaration for Codex hosts that load trusted project config.
+# Hosted cloud chats may need the Mobbin plugin enabled separately.
+# Authentication is per host/account and is intentionally absent from Git.
+[mcp_servers.mobbin]
+url = "https://api.mobbin.com/mcp"
+enabled = true
+startup_timeout_sec = 60

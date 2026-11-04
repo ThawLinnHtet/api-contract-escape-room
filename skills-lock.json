@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "skills": {
+    "best-practices": {
+      "source": "mobbin/skills",
+      "sourceType": "github",
+      "skillPath": "skills/best-practices/SKILL.md",
+      "computedHash": "9aedae167496d9e0c91b787176d4482de1c1a790eab7c65f499f2f0e19f3cbcb",
+      "installMode": "copy"
+    },
+    "plain-writing": {
+      "source": "mobbin/skills",
+      "sourceType": "github",
+      "skillPath": "skills/plain-writing/SKILL.md",
+      "computedHash": "9673ba195227eea916723f4235cf1ad8093efd58919c075b23d4160e57febe15",
+      "installMode": "copy"
+    },
+    "redesign-screen": {
+      "source": "mobbin/skills",
+      "sourceType": "github",
+      "skillPath": "skills/redesign-screen/SKILL.md",
+      "computedHash": "0f7a26ca2bf9179f500813bea253f840a1ac51c4b1c335723ca386dd179d78e8",
+      "installMode": "copy"
+    },
+    "search": {
+      "source": "mobbin/skills",
+      "sourceType": "github",
+      "skillPath": "skills/search/SKILL.md",
+      "computedHash": "9a50c409b681711366b04693bdbf95c36e6c3bd8f4b5001b983a80de8733cea7",
+      "installMode": "copy"
+    }
+  }
+}

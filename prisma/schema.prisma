@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["escape_room"]
+}
+
+model GuestSession {
+  id          String   @id @default(uuid())
+  tokenHash   String   @unique
+  createdAt   DateTime @default(now())
+  activeRunId String?  @unique
+  activeRun   GameRun? @relation("ActiveRun", fields: [activeRunId], references: [id], onDelete: SetNull)
+  runs        GameRun[] @relation("OwnedRuns")
+
+  @@schema("escape_room")
+}
+
+model GameRun {
+  id              String   @id @default(uuid())
+  sessionId       String
+  campaignVersion Int      @default(1)
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  clearance       String   @default("guest")
+  revision        Int      @default(0)
+  session         GuestSession @relation("OwnedRuns", fields: [sessionId], references: [id], onDelete: Cascade)
+  activeFor       GuestSession? @relation("ActiveRun")
+  rooms           RoomProgress[]
+  artifacts       Artifact[]
+  attempts        RequestAttempt[]
+
+  @@index([sessionId, startedAt])
+  @@schema("escape_room")
+}
+
+model RoomProgress {
+  id        String   @id @default(uuid())
+  runId     String
+  roomId    String
+  solvedAt  DateTime?
+  hintLevel Int      @default(0)
+  run       GameRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, roomId])
+  @@schema("escape_room")
+}
+
+model Artifact {
+  id        String   @id @default(uuid())
+  runId     String
+  kind      String
+  value     String
+  createdAt DateTime @default(now())
+  run       GameRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, kind])
+  @@schema("escape_room")
+}
+
+model RequestAttempt {
+  id          String   @id @default(uuid())
+  runId       String
+  requestId   String
+  procedure   String
+  fingerprint String
+  input       Json
+  response    Json
+  source      String   @default("mutation")
+  createdAt   DateTime @default(now())
+  durationMs  Int
+  run         GameRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, requestId])
+  @@index([runId, createdAt, id])
+  @@schema("escape_room")
+}

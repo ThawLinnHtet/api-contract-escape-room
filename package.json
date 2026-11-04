@@ -1,0 +1,52 @@
+{
+  "dependencies": {
+    "@neon/config": "^1.10.0",
+    "@neon/env": "^1.6.8",
+    "@next/env": "16.4.4",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "@tanstack/react-query": "5.105.3",
+    "@trpc/client": "11.23.0",
+    "@trpc/server": "11.23.0",
+    "@trpc/tanstack-react-query": "11.23.0",
+    "dotenv": "18.0.9",
+    "next": "16.4.4",
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "server-only": "0.0.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "prisma": "7.10.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  },
+  "name": "api-contract-escape-room",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "next start",
+    "db:generate": "prisma generate",
+    "db:deploy": "prisma migrate deploy",
+    "typecheck": "next typegen && tsc --noEmit",
+    "build": "prisma generate && next build",
+    "dev": "next dev",
+    "test:e2e": "playwright test",
+    "check:secrets": "node scripts/check-staged-secrets.mjs"
+  },
+  "allowScripts": {
+    "prisma@7.10.1": true,
+    "@prisma/engines@7.10.1": true,
+    "esbuild@0.28.2": true
+  },
+  "engines": {
+    "node": ">=24 <25"
+  }
+}

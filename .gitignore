@@ -1,0 +1,17 @@
+.neon
+node_modules/
+.env.local
+
+.env
+.env.*
+!.env.example
+.next/
+src/generated/prisma/
+*.tsbuildinfo
+playwright-report/
+test-results/
+
+.agents/skills/impeccable/scripts/bin/
+.impeccable/build/
+.impeccable/review/
+*.log
