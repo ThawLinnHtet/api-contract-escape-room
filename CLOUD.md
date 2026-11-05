@@ -4,7 +4,7 @@ Updated: 2026-11-05
 
 ## Current state
 
-- The repository contains a Next.js, tRPC, and Prisma gateway-room implementation plus the full campaign plan.
+- The repository contains a Next.js, tRPC, and Prisma implementation of all five campaign rooms.
 - Impeccable 4.8.0 is installed inside `.agents/skills/impeccable`, with project hooks under `.codex/hooks.json`. Its Windows engine answered `impeccable-engine 0.1.18`. Platform binaries are ignored; the portable launcher can obtain the Linux engine.
 - Official Mobbin skills are installed in `.agents/skills`. The remote MCP declaration is in `.codex/config.toml`.
 - Neon CLI initialization and `neon deploy` succeeded for project `billowing-bread-81133505`, branch `production`. Only Postgres is configured in neon.ts.
@@ -25,6 +25,18 @@ The active target is `codex-dev`. On 2026-11-05:
 - `/api/health` returned `{ "status": "ok", "postgres": "connected" }`.
 
 For this HTTPS-only environment, set `DATABASE_TRANSPORT=neon-websocket` when starting the app and use `npm run db:deploy:websocket`. The default `pg` path requires PostgreSQL TCP access. On this executor, npm downloads require a writable cache (`npm_config_cache=/tmp/npm-cache`), and Chromium is installed with `PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-browsers`; use the same path for test runs.
+
+## Milestone 2 verification
+
+On 2026-11-05, the production build and strict typecheck passed. Against `codex-dev`, all seven browser/API tests passed in 4.1 minutes:
+
+```bash
+BASE_URL=http://127.0.0.1:3101 PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-browsers UI_SCREENSHOT_DIR=/workspace/artifacts/milestone-2 npm run test:e2e
+```
+
+The new tests cover the complete browser journey, locked procedures, foreign credentials and cursors, archive recovery, concurrent and duplicate power transitions, wrong final evidence, stable completion timestamps, and stale requests after restart. Existing gateway regression checks also passed. Screenshots cover desktop, the 360px gateway, archive results, and completion. No schema migration was required: later room progress is created on successful transitions or hint disclosure, and the existing revision field tracks the power prefix.
+
+Query results are shown locally but are not yet persisted through the separate query-history mutation; that remains Milestone 3 work. Beginner playtesting and the full final acceptance audit remain Milestone 4 work.
 
 ## Create the environment
 
@@ -74,7 +86,7 @@ Read `.agents/skills/best-practices/SKILL.md`, then `.agents/skills/search/SKILL
 
 ## New cloud chat prompt
 
-Continue API Contract Escape Room from this repository. Read AGENTS.md, CLOUD.md, PRD.md, DESIGN.md, DATABASE.md, and ROADMAP.md. The user chose a Codecademy lesson workspace with Postman request controls and Railway dark surfaces. Impeccable and Mobbin skills are installed locally. Start by checking environment/network readiness and making an authenticated Mobbin search; show the returned screen link. Verify the configured Neon target without printing credentials. Finish the initial schema migration and required build/browser checks described in CLOUD.md. Report actual command results and blockers. The current build implements only the gateway room; the remaining campaign is planned, and the roadmap must stay unchecked until its exit criteria are verified. Continue the user's earlier Neon setup request without creating another Neon project or adding unrelated services.
+Continue API Contract Escape Room from this repository. Read AGENTS.md, CLOUD.md, PRD.md, DESIGN.md, DATABASE.md, and ROADMAP.md. Preserve the selected lesson workspace design. All five campaign rooms are implemented. The cloud target is codex-dev; use DATABASE_TRANSPORT=neon-websocket because this executor has HTTPS access without PostgreSQL TCP grants. Review the latest verification record, then continue the earliest unfinished milestone. Query history persistence and final release acceptance remain separate work. Keep production deployment explicit and credentials outside Git.
 
 ## References
 

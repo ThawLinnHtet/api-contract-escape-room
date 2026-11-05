@@ -4,9 +4,9 @@ A browser puzzle game for learning typed API interactions and building with tRPC
 
 ## Current build
 
-The gateway room is implemented with a JSON request editor, validation feedback, guest sessions, hints, inventory, persistent attempts, and restart. Next.js serves the UI and tRPC routes. Prisma accesses Neon PostgreSQL through the Node.js `pg` driver.
+All five rooms are implemented: gateway validation, identity clearance, paginated archive recovery, ordered power startup, and final restoration. Next.js serves the lesson workspace and typed tRPC request console. Prisma persists session-scoped progress, earned artifacts, mutation history, hints, and completion in Neon PostgreSQL.
 
-Rooms 2 through 5 remain planned. Milestone 1 is verified against the isolated `codex-dev` Neon branch; see CLOUD.md for the verification record. Existing roadmap items describe the complete planned campaign, rather than claiming that the MVP is finished.
+Milestones 1 and 2 are verified against the isolated `codex-dev` branch. All seven browser/API tests pass; see CLOUD.md for its verification record. Query history persistence and the remaining Milestone 3/4 acceptance work are tracked separately in ROADMAP.md.
 
 ## Local setup
 

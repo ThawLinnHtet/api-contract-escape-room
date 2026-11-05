@@ -1,7 +1,7 @@
 # Design direction
 
 Selected: 2026-11-03  
-Status: user selected the Codecademy lesson layout, supported by Postman request controls and Railway dark surfaces. The gateway workspace UI is implemented; rendered visual verification is pending. Exact tokens below are initial proposals to verify during implementation.
+Status: user selected the Codecademy lesson layout, supported by Postman request controls and Railway dark surfaces. All five rooms use the workspace. Desktop gateway/archive/completion and 360px gateway screenshots were inspected on 2026-11-05. Tokens below were retained through this visual check; the full release accessibility audit remains pending.
 
 ## Purpose
 
@@ -83,3 +83,9 @@ Inspect a typical room, a long contract, multiline JSON, validation feedback, a 
 ## Current boundary
 
 The layout reference is selected. Tokens, exact panel proportions, and component styling are proposed implementation defaults. The gateway screen exists in code; no completed visual QA result is claimed by this document.
+
+## Campaign implementation check — 2026-11-05
+
+Retained the three-pane lesson workspace and existing palette. Compact room rows bring the clue into the desktop viewport. Locked rooms are disabled with explicit labels; solved rooms retain navigation and gain check marks. Each room has its own allowlisted procedures, public contracts, and input templates. A successful solve offers Continue without replacing the response. Completion shows saved elapsed time and a brief explanation of each room’s API concept. Inventory values remain selectable. At 360px, navigation becomes a five-step row and the content stacks without page overflow.
+
+Rendered evidence is saved under `/workspace/artifacts/milestone-2` in this cloud workspace. These captures verify the shown states, not a completed release audit.

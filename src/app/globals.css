@@ -175,3 +175,22 @@ dialog p { color: var(--text-muted); font-size: 14px; }
   footer { padding: 16px; flex-direction: column; gap: 8px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0s !important; scroll-behavior: auto !important; } }
+/* Keep the clue and request together in the first desktop viewport. */
+.room-item { padding: 8px 10px; gap: 10px; }
+.room-item small { font-size: 11px; margin-top: 1px; }
+.room-check { color: var(--success); margin-left: auto; flex-shrink: 0; }
+.room-item:hover:not(:disabled):not(.active) { color: var(--text); background: var(--surface); }
+.room-item:disabled:not(.active) { opacity: .65; }
+.mission { margin-top: 28px; }
+.mission h1 { font-size: 28px; font-weight: 600; line-height: 1.15; letter-spacing: -.025em; margin: 0 0 16px; text-wrap: balance; }
+.clue { margin-top: 20px; padding: 16px 0; }
+.inventory, .hint-section { margin-top: 24px; }
+.artifact + .artifact { margin-top: 16px; }
+.artifact code { user-select: all; }
+.completion { margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px; }
+.completion h2 { font-size: 32px; letter-spacing: -.025em; }
+.completion > p { color: var(--text-muted); font-size: 14px; }
+.completion ol { padding-left: 20px; font-size: 13px; }
+.completion li { padding: 8px 0; }
+.completion li p { color: var(--text-muted); margin: 4px 0 0; }
+@media (max-width: 760px) { .room-item { padding: 8px 2px; gap: 3px; } .room-check { margin-left: 0; } }
