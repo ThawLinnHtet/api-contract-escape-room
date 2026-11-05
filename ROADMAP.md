@@ -1,6 +1,6 @@
 # Implementation roadmap
 
-Work in order. Each milestone ends with observable behavior; mark it complete only after its exit checks pass. Milestone 1 is complete and verified on the isolated `codex-dev` Neon branch. Continue with Milestone 2.
+Work in order. Each milestone ends with observable behavior; mark it complete only after its exit checks pass. Milestone 1 is complete and verified on the isolated `codex-dev` Neon branch. Milestone 2 is also complete; continue with Milestone 3.
 
 ## Milestone 1 — Playable gateway
 
@@ -18,13 +18,15 @@ Verified 2026-11-05: development migration and repeat deployment, application he
 
 ## Milestone 2 — Complete campaign
 
-- [ ] Implement identity clearance and permission middleware.
-- [ ] Add archive fixtures, filter validation, cursor pagination, and key recovery.
-- [ ] Add atomic ordered power transitions and status inspection.
-- [ ] Implement final restoration and stable completion timestamps.
-- [ ] Enforce room locks and run ownership on every procedure.
+- [x] Implement identity clearance and permission middleware.
+- [x] Add archive fixtures, filter validation, cursor pagination, and key recovery.
+- [x] Add atomic ordered power transitions and status inspection.
+- [x] Implement final restoration and stable completion timestamps.
+- [x] Enforce room locks and run ownership on every procedure.
 
 Exit: all five rooms are playable in order. Direct calls cannot skip rooms or access another guest's data. Tests cover the archive pagination path and concurrent/duplicate power operations.
+
+Verified 2026-11-05 on `codex-dev`: all seven browser/API tests passed (4.1 minutes), including the full campaign, scoped evidence and archive cursors, locked procedures, concurrent power requests, stable completion, and reload. Strict typecheck and production build passed. Desktop and 360px screenshots were visually reviewed.
 
 ## Milestone 3 — Recovery and learning support
 

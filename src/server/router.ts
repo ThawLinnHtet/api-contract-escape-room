@@ -4,14 +4,46 @@ import { z } from 'zod';
 import { router, protectedProcedure } from './trpc';
 import { gatewayHints, unlockGateway } from './gateway';
 import { lockActiveRun } from './session';
+import { schemas, roomIds } from '@/shared/campaign';
+import { mutateCampaign, readRoom, searchArchive, powerStatus, requireRoom } from './campaign';
 
+const roomHints = {
+  gateway: gatewayHints,
+  identity: ['Inspect your clearance with identity.status.', 'Your gateway receipt is a credential for this run.', 'Copy the gateway receipt from Inventory into the credential field.'],
+  archive: ['Read beyond the first page.', 'Search maintenance and copy nextCursor into the next search.', 'The repair note identifies Emergency maintenance key. Recover its record ID.'],
+  power: ['The startup protocol describes an order.', 'Cooling must be active before core; uplink comes last.', 'Activate cooling, then core, then uplink using separate requests.'],
+  control: ['Three earned artifacts authorize restoration.', 'The contract names the vault seal, maintenance key, and power checksum.', 'Copy those three values from Inventory into their matching fields.'],
+};
 const runInput = z.object({ runId: z.uuid() }).strict();
 
+const mutationInput = <T extends z.ZodType>(schema: T) => z.object({ runId: z.uuid(), requestId: z.uuid(), input: schema }).strict();
+const roomQuery = (room: 'identity' | 'archive' | 'power') => protectedProcedure.input(runInput).use(async ({ ctx, input, next }) => {
+  const run = await readRoom(ctx.sessionId, input.runId, room);
+  return next({ ctx: { ...ctx, run } });
+});
 export const appRouter = router({
+  identity: router({
+    status: roomQuery('identity').query(({ ctx }) => ({ clearance: ctx.run.clearance })),
+    claim: protectedProcedure.input(mutationInput(schemas['identity.claim'])).mutation(({ ctx, input }) => mutateCampaign(ctx.sessionId, input, 'identity.claim', 'identity')),
+  }),
+  archive: router({
+    search: protectedProcedure.input(runInput.extend(schemas['archive.search'].shape)).query(async ({ ctx, input }) => {
+      await readRoom(ctx.sessionId, input.runId, 'archive');
+      return searchArchive(input.runId, input.tag, input.cursor);
+    }),
+    recover: protectedProcedure.input(mutationInput(schemas['archive.recover'])).mutation(({ ctx, input }) => mutateCampaign(ctx.sessionId, input, 'archive.recover', 'archive')),
+  }),
+  power: router({
+    status: roomQuery('power').query(({ ctx }) => powerStatus(ctx.run.revision)),
+    activate: protectedProcedure.input(mutationInput(schemas['power.activate'])).mutation(({ ctx, input }) => mutateCampaign(ctx.sessionId, input, 'power.activate', 'power')),
+  }),
+  control: router({
+    restore: protectedProcedure.input(mutationInput(schemas['control.restore'])).mutation(({ ctx, input }) => mutateCampaign(ctx.sessionId, input, 'control.restore', 'control')),
+  }),
   gateway: router({
     unlock: protectedProcedure.input(z.object({
       runId: z.uuid(), requestId: z.uuid(),
-      input: z.object({ accessCode: z.string().regex(/^\d{4}$/, 'accessCode must contain exactly four digits.') }).strict(),
+      input: schemas['gateway.unlock'],
     }).strict()).mutation(({ ctx, input }) => unlockGateway(ctx.sessionId, input)),
   }),
   game: router({
@@ -31,6 +63,7 @@ export const appRouter = router({
         rooms: run.rooms.map(room => ({ ...room, solvedAt: room.solvedAt?.toISOString() ?? null })),
         artifacts: run.artifacts,
         hints: gatewayHints.slice(0, run.rooms.find(room => room.roomId === 'gateway')?.hintLevel ?? 0),
+        roomHints: Object.fromEntries(roomIds.map(id => [id, roomHints[id].slice(0, run.rooms.find(r => r.roomId === id)?.hintLevel ?? 0)])),
       };
     }),
     history: protectedProcedure.input(z.object({
@@ -51,12 +84,13 @@ export const appRouter = router({
       const items = attempts.slice(0, 20).map(attempt => ({ ...attempt, createdAt: attempt.createdAt.toISOString() }));
       return { items, nextCursor: hasMore ? items.at(-1)!.id : null };
     }),
-    hint: protectedProcedure.input(runInput).mutation(({ ctx, input }) => ctx.db.$transaction(async tx => {
+    hint: protectedProcedure.input(runInput.extend({ roomId: z.enum(roomIds).default('gateway') })).mutation(({ ctx, input }) => ctx.db.$transaction(async tx => {
       await lockActiveRun(tx, ctx.sessionId, input.runId);
-      const room = await tx.roomProgress.findUniqueOrThrow({ where: { runId_roomId: { runId: input.runId, roomId: 'gateway' } } });
+      await requireRoom(tx, input.runId, input.roomId);
+      const room = await tx.roomProgress.upsert({ where: { runId_roomId: { runId: input.runId, roomId: input.roomId } }, create: { runId: input.runId, roomId: input.roomId }, update: {} });
       const level = Math.min(3, room.hintLevel + 1);
       await tx.roomProgress.update({ where: { id: room.id }, data: { hintLevel: level } });
-      return gatewayHints.slice(0, level);
+      return roomHints[input.roomId].slice(0, level);
     })),
     restart: protectedProcedure.input(runInput).mutation(({ ctx, input }) => ctx.db.$transaction(async tx => {
       await lockActiveRun(tx, ctx.sessionId, input.runId);
