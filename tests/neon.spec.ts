@@ -30,11 +30,11 @@ test('browser game writes to Neon and survives reload with hints and history', a
   const input = page.getByLabel('JSON input', { exact: true });
   await input.fill('{');
   await send.click();
-  await expect(page.getByRole('alert')).toContainText('not valid JSON');
+  await expect(page.getByRole('region', { name: 'Request', exact: true }).getByRole('alert')).toContainText('not valid JSON');
   await expect(input).toHaveValue('{');
   await input.fill('{ "accessCode": "12" }');
   await send.click();
-  await expect(page.getByRole('alert')).toContainText('exactly four digits');
+  await expect(page.getByRole('region', { name: 'Request', exact: true }).getByRole('alert')).toContainText('exactly four digits');
   await expect(input).toHaveValue('{ "accessCode": "12" }');
 
   await input.fill('{ "accessCode": "0000" }');
@@ -109,4 +109,22 @@ test('the mobile workspace fits at 360px and restart requires confirmation', asy
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('button', { name: 'Keep playing', exact: true }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
+});
+
+test('gateway validation and incorrect answers preserve unsolved state', async ({ context }) => {
+  const anonymous = createTRPCClient<AppRouter>({ links: [httpLink({ url: `${baseURL}/api/trpc`, headers: { origin: baseURL } })] });
+  await expect(anonymous.game.progress.query()).rejects.toMatchObject({ data: { code: 'UNAUTHORIZED' } });
+  const client = await api(context);
+  const initial = await client.game.progress.query();
+  const payload = { runId: initial.id, requestId: randomUUID(), input: { accessCode: '12' } };
+  await expect(client.gateway.unlock.mutate(payload)).rejects.toMatchObject({ data: { code: 'BAD_REQUEST' } });
+  expect((await client.game.history.query({ runId: initial.id })).items).toHaveLength(0);
+  const incorrect = { ...payload, input: { accessCode: '0000' } };
+  const first = await client.gateway.unlock.mutate(incorrect);
+  expect(first.outcome).toBe('INCORRECT');
+  expect(await client.gateway.unlock.mutate(incorrect)).toEqual(first);
+  const progress = await client.game.progress.query();
+  expect(progress.artifacts).toHaveLength(0);
+  expect(progress.rooms.find(room => room.roomId === 'gateway')?.solvedAt).toBeNull();
+  expect((await client.game.history.query({ runId: initial.id })).items).toHaveLength(1);
 });

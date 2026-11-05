@@ -1,6 +1,6 @@
 # Cloud environment handoff
 
-Prepared: 2026-11-04
+Updated: 2026-11-05
 
 ## Current state
 
@@ -9,8 +9,22 @@ Prepared: 2026-11-04
 - Official Mobbin skills are installed in `.agents/skills`. The remote MCP declaration is in `.codex/config.toml`.
 - Neon CLI initialization and `neon deploy` succeeded for project `billowing-bread-81133505`, branch `production`. Only Postgres is configured in neon.ts.
 - Local database credentials stay in the ignored `.env.local`. They are not in GitHub and are not automatically transferred to a cloud environment.
-- Local `npm run build` passed on 2026-11-04: Next.js compiled successfully, completed TypeScript checks, and generated all four static pages. The local typecheck also passed. The initial migration is committed under `prisma/migrations`. A read-only production inspection found no tables in the `escape_room` schema on 2026-11-04. Migration application and end-to-end verification remain outstanding.
-- No cloud environment for this repository has been published, and no new cloud chat has been created yet. Browser automation stopped because it could not verify the current browser URL. The two environments accessible from the app tools belong to a different repository.
+- Local `npm run build` passed on 2026-11-04: Next.js compiled successfully, completed TypeScript checks, and generated all four static pages. The local typecheck also passed. The initial migration is committed under `prisma/migrations`. A read-only production inspection found no tables in the `escape_room` schema on 2026-11-04. The development migration has since been applied to `codex-dev`; production remains a separate deployment step.
+- This cloud environment is connected and uses the isolated `codex-dev` Neon branch. Runtime variables are ready; HTTPS is enforced as unrestricted and there are no PostgreSQL TCP grants. Neon WebSockets through the inherited HTTPS proxy are verified.
+
+## Verification in this cloud environment
+
+The active target is `codex-dev`. On 2026-11-05:
+
+- `npm run db:deploy:websocket` applied `20261103_initial`; rerunning reported already applied.
+- `npm run typecheck` passed.
+- `npm run build` passed with the executor's network permission enabled.
+- `DATABASE_TRANSPORT=neon-websocket npm run start -- --hostname 0.0.0.0 --port 3100` started the production build.
+- All five Playwright browser/API integration cases passed: health, browser persistence/hints/history, concurrent retries/ownership/restart/origin protection, mobile layout, and validation/incorrect-answer state. Four passed in the suite; the browser journey passed in a targeted rerun after scoping its alert selector.
+- Fixed same-origin validation to compare against the request Host header when Next.js listens on `0.0.0.0`; cross-origin rejection remains covered.
+- `/api/health` returned `{ "status": "ok", "postgres": "connected" }`.
+
+For this HTTPS-only environment, set `DATABASE_TRANSPORT=neon-websocket` when starting the app and use `npm run db:deploy:websocket`. The default `pg` path requires PostgreSQL TCP access. On this executor, npm downloads require a writable cache (`npm_config_cache=/tmp/npm-cache`), and Chromium is installed with `PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-browsers`; use the same path for test runs.
 
 ## Create the environment
 
@@ -48,7 +62,7 @@ After the install command succeeds:
 6. Check `/api/health`, then run `BASE_URL=http://127.0.0.1:3100 npm run test:e2e` against the isolated test target.
 7. Record the build and test output. Verify saved progress through a browser reload; verify duplicate submissions, guest isolation, and restart isolation. Apply the reviewed migration to production as a separate explicit deployment step.
 
-Playwright selects installed Chrome on Windows and its managed Chromium on Linux. Four browser/API integration tests are included. Their results are pending until they actually run.
+Playwright selects installed Chrome on Windows and its managed Chromium on Linux. Five browser/API integration tests are included. Their development results are recorded above; rerun against the intended target when changing behavior.
 
 ## Mobbin verification
 

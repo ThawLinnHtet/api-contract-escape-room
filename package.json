@@ -2,7 +2,9 @@
   "dependencies": {
     "@neon/config": "^1.10.0",
     "@neon/env": "^1.6.8",
+    "@neondatabase/serverless": "1.2.0",
     "@next/env": "16.4.4",
+    "@prisma/adapter-neon": "7.10.1",
     "@prisma/adapter-pg": "7.10.1",
     "@prisma/client": "7.10.1",
     "@tanstack/react-query": "5.105.3",
@@ -10,11 +12,13 @@
     "@trpc/server": "11.23.0",
     "@trpc/tanstack-react-query": "11.23.0",
     "dotenv": "18.0.9",
+    "https-proxy-agent": "9.1.0",
     "next": "16.4.4",
     "pg": "8.23.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "server-only": "0.0.1",
+    "ws": "8.22.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
@@ -23,6 +27,7 @@
     "@types/pg": "8.23.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "@types/ws": "8.18.2",
     "prisma": "7.10.1",
     "tsx": "4.23.15",
     "typescript": "5.9.3"
@@ -39,7 +44,8 @@
     "build": "prisma generate && next build",
     "dev": "next dev",
     "test:e2e": "playwright test",
-    "check:secrets": "node scripts/check-staged-secrets.mjs"
+    "check:secrets": "node scripts/check-staged-secrets.mjs",
+    "db:deploy:websocket": "tsx scripts/migrate-websocket.ts"
   },
   "allowScripts": {
     "prisma@7.10.1": true,

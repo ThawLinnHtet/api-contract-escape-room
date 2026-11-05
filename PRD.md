@@ -1,6 +1,6 @@
 # API Contract Escape Room — Product Requirements
 
-Status: approved concept; gateway implementation created, verification pending  
+Status: approved concept; Milestone 1 gateway implemented and verified on codex-dev
 Created: 2026-11-03  
 Working title: API Contract Escape Room
 
@@ -137,7 +137,7 @@ Compute elapsed time from server timestamps for run start and completion; time c
 
 ## 7. Initial data model
 
-Database decision: Neon PostgreSQL with Prisma. Use DATABASE.md for connection configuration, environment separation, and migration workflow. Neon CLI setup and environment pull succeeded; application schema migration and end-to-end verification remain pending.
+Database decision: Neon PostgreSQL with Prisma. Use DATABASE.md for connection configuration, environment separation, and migration workflow. The schema migration and gateway end-to-end verification passed on the isolated codex-dev branch. Production deployment and the remaining campaign milestones are pending.
 
 | Entity | Purpose and key fields |
 | --- | --- |

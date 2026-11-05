@@ -6,7 +6,7 @@ A browser puzzle game for learning typed API interactions and building with tRPC
 
 The gateway room is implemented with a JSON request editor, validation feedback, guest sessions, hints, inventory, persistent attempts, and restart. Next.js serves the UI and tRPC routes. Prisma accesses Neon PostgreSQL through the Node.js `pg` driver.
 
-Rooms 2 through 5 remain planned. Database migrations and end-to-end verification are pending; see CLOUD.md for the handoff state. Existing roadmap items describe the complete planned campaign, rather than claiming that the MVP is finished.
+Rooms 2 through 5 remain planned. Milestone 1 is verified against the isolated `codex-dev` Neon branch; see CLOUD.md for the verification record. Existing roadmap items describe the complete planned campaign, rather than claiming that the MVP is finished.
 
 ## Local setup
 
@@ -18,6 +18,15 @@ npm run db:generate
 npm run db:deploy
 npm run dev
 ```
+
+In a managed cloud environment with HTTPS access and no PostgreSQL TCP grants, use Neon's WebSocket transport (including interactive transactions):
+
+```bash
+npm run db:deploy:websocket
+DATABASE_TRANSPORT=neon-websocket npm run dev
+```
+
+Set `DATABASE_TRANSPORT=neon-websocket` for the production server too. The WebSocket driver preserves `HTTPS_PROXY` and TLS verification. The migration runner applies explicitly transactional committed migrations and records their checksums in Prisma's migration ledger; reruns skip unchanged migrations and reject changed or unfinished ones. TCP environments can continue using `npm run db:deploy` and the default `pg` adapter.
 
 The migration creates the app's five tables inside `escape_room`. Review and test migrations on an isolated branch before applying them to production.
 

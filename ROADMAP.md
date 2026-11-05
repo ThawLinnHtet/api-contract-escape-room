@@ -1,18 +1,20 @@
 # Implementation roadmap
 
-Work in order. Each milestone ends with observable behavior; mark it complete only after its exit checks pass. The gateway implementation exists; its exit checks are pending. Continue cloud setup using CLOUD.md.
+Work in order. Each milestone ends with observable behavior; mark it complete only after its exit checks pass. Milestone 1 is complete and verified on the isolated `codex-dev` Neon branch. Continue with Milestone 2.
 
 ## Milestone 1 — Playable gateway
 
-- [ ] Scaffold Next.js, strict TypeScript, a compatible tRPC integration, Zod, and Prisma with Neon PostgreSQL.
-- [ ] Add reproducible local setup, database initialization, and package scripts to README.md.
-- [ ] Configure Neon's runtime and migration connections per DATABASE.md; verify migrations against an isolated development database.
-- [ ] Persist guest session and active run, with context derived from the cookie.
-- [ ] Implement the room 1 public contract, server solution check, artifact award, and progress query.
-- [ ] Build the brief, procedure selector, JSON textarea, send action, and response viewer.
-- [ ] Make gateway mutations duplicate-safe and save accepted attempts transactionally.
+- [x] Scaffold Next.js, strict TypeScript, a compatible tRPC integration, Zod, and Prisma with Neon PostgreSQL.
+- [x] Add reproducible local setup, database initialization, and package scripts to README.md.
+- [x] Configure Neon's runtime and migration connections per DATABASE.md; verify migrations against an isolated development database.
+- [x] Persist guest session and active run, with context derived from the cookie.
+- [x] Implement the room 1 public contract, server solution check, artifact award, and progress query.
+- [x] Build the brief, procedure selector, JSON textarea, send action, and response viewer.
+- [x] Make gateway mutations duplicate-safe and save accepted attempts transactionally.
 
 Exit: a new guest can solve room 1, reload, and see the same state. Invalid JSON, invalid input, wrong answers, and a duplicated successful request behave as specified. Type checks and the relevant router tests pass.
+
+Verified 2026-11-05: development migration and repeat deployment, application health, production build, strict typecheck, and all five browser/API integration cases passed. The four API/mobile checks passed in the suite; the browser persistence journey passed after correcting its alert selector. See CLOUD.md for commands and transport settings.
 
 ## Milestone 2 — Complete campaign
 
