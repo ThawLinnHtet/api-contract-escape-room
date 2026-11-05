@@ -9,7 +9,10 @@ export const hashToken = (token: string) => createHash('sha256').update(token).d
 export const createToken = () => randomBytes(32).toString('base64url');
 
 export function hasSameOrigin(req: Request): boolean {
-  return req.headers.get('origin') === new URL(req.url).origin;
+  const url = new URL(req.url);
+  const host = req.headers.get('host');
+  if (!host) return false;
+  return req.headers.get('origin') === `${url.protocol}//${host}`;
 }
 
 export async function readSession(req: Request) {
