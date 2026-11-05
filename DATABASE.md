@@ -35,6 +35,12 @@ The initial migration qualifies application table names and wraps its statements
 
 Guest cookie values are hashed before persistence. Domain mutations lock the guest's active-run selection so restart and puzzle retries are serialized. Gateway result, progress, artifact, and accepted attempt writes share a transaction. Duplicate request IDs replay their saved result and reject a different payload.
 
+## Query history and hint retries
+
+`game.recordQuery` accepts only the three documented query procedures and their bounded public response shapes. It locks the active run, stores a `source: query` presentation record, and uses the shared `(runId, requestId)` uniqueness rule for retries. Query results never update clearance, artifacts, room progress, or the power prefix. Authorization and completion read the domain state rather than request history.
+
+Hint disclosure accepts a requested level. The server rejects skipped levels and returns already revealed hints when the same level is retried. The existing schema supports these changes without a migration.
+
 ## Commands and environments
 
 ```bash

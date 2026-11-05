@@ -63,7 +63,6 @@ h3 { font-size: 15px; font-weight: 600; }
 .room-item strong { display: block; font-size: 13px; font-weight: 550; }
 .room-item small { display: block; font-size: 12px; color: var(--text-muted); margin-top: 3px; }
 .mission { margin-top: 36px; }
-.mission h2 { font-size: 27px; letter-spacing: -.025em; max-width: 10ch; }
 .mission p { font-size: 14px; color: var(--text-muted); }
 .clue { padding: 18px 0; margin: 24px 0 16px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .clue h3 { color: var(--warning); margin-bottom: 10px; }
@@ -164,7 +163,6 @@ dialog p { color: var(--text-muted); font-size: 14px; }
   .room-number { padding: 0; align-self: auto; }
   .room-item > span:last-child { display: none; }
   .mission { margin-top: 28px; }
-  .mission h2 { max-width: none; font-size: 28px; }
   .inventory { margin-top: 24px; }
   .hint-section { margin-top: 24px; }
   .pane-heading { min-height: 44px; margin-bottom: 24px; padding-bottom: 16px; }
@@ -187,10 +185,16 @@ dialog p { color: var(--text-muted); font-size: 14px; }
 .inventory, .hint-section { margin-top: 24px; }
 .artifact + .artifact { margin-top: 16px; }
 .artifact code { user-select: all; }
-.completion { margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px; }
-.completion h2 { font-size: 32px; letter-spacing: -.025em; }
-.completion > p { color: var(--text-muted); font-size: 14px; }
-.completion ol { padding-left: 20px; font-size: 13px; }
-.completion li { padding: 8px 0; }
-.completion li p { color: var(--text-muted); margin: 4px 0 0; }
 @media (max-width: 760px) { .room-item { padding: 8px 2px; gap: 3px; } .room-check { margin-left: 0; } }
+.run-recap > h2 { font-size: 36px; letter-spacing: -.025em; margin-bottom: 12px; }
+.run-recap > p { color: var(--text-muted); font-size: 14px; }
+.recap-facts { margin: 28px 0 32px; border-top: 1px solid var(--border); }
+.recap-facts > div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.recap-facts dt { color: var(--text-muted); }
+.recap-facts dd { margin: 0; font-variant-numeric: tabular-nums; }
+.concept-list { padding-left: 20px; font-size: 13px; margin: 24px 0 28px; }
+.concept-list li { padding: 0 0 18px 4px; }
+.concept-list p { color: var(--text-muted); margin: 6px 0 0; }
+.recap-note { margin-top: 16px; }
+.history-warning { padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--border); color: var(--warning); font-size: 13px; }
+.history-warning p { margin-bottom: 12px; }

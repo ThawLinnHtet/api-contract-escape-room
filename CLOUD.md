@@ -36,7 +36,17 @@ BASE_URL=http://127.0.0.1:3101 PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-browsers UI_SCRE
 
 The new tests cover the complete browser journey, locked procedures, foreign credentials and cursors, archive recovery, concurrent and duplicate power transitions, wrong final evidence, stable completion timestamps, and stale requests after restart. Existing gateway regression checks also passed. Screenshots cover desktop, the 360px gateway, archive results, and completion. No schema migration was required: later room progress is created on successful transitions or hint disclosure, and the existing revision field tracks the power prefix.
 
-Query results are shown locally but are not yet persisted through the separate query-history mutation; that remains Milestone 3 work. Beginner playtesting and the full final acceptance audit remain Milestone 4 work.
+Query results now persist through the separate `game.recordQuery` mutation, with local recovery when a save fails. See the Milestone 3 verification record for current checks. Beginner playtesting and the full final acceptance audit remain Milestone 4 work.
+
+## Milestone 3 verification
+
+On 2026-11-05, all nine browser/API tests passed in 8.3 minutes against `codex-dev`. The suite verifies all 15 hint levels and repeat disclosure, 20-entry history pagination, query-history retry identity and isolation, bounded display payloads, a completed recap after reload, and actual browser network failures. A lost mutation response was retried with the same request body; failed query-history saving preserved the local response and recovered without reissuing the query. Restart clears the active history and rejects old-run saves. Strict typecheck and production build passed. No migration was required.
+
+```bash
+BASE_URL=http://127.0.0.1:3103 PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-browsers UI_SCREENSHOT_DIR=/workspace/artifacts/milestone-3 npm run test:e2e
+```
+
+Milestones 1 through 3 are complete. Continue with the Milestone 4 release audit and beginner playtesting. Production deployment remains separate.
 
 ## Create the environment
 
@@ -74,7 +84,7 @@ After the install command succeeds:
 6. Check `/api/health`, then run `BASE_URL=http://127.0.0.1:3100 npm run test:e2e` against the isolated test target.
 7. Record the build and test output. Verify saved progress through a browser reload; verify duplicate submissions, guest isolation, and restart isolation. Apply the reviewed migration to production as a separate explicit deployment step.
 
-Playwright selects installed Chrome on Windows and its managed Chromium on Linux. Five browser/API integration tests are included. Their development results are recorded above; rerun against the intended target when changing behavior.
+Playwright selects installed Chrome on Windows and its managed Chromium on Linux. Nine browser/API integration tests are included. Their development results are recorded above; rerun against the intended target when changing behavior.
 
 ## Mobbin verification
 
@@ -86,7 +96,7 @@ Read `.agents/skills/best-practices/SKILL.md`, then `.agents/skills/search/SKILL
 
 ## New cloud chat prompt
 
-Continue API Contract Escape Room from this repository. Read AGENTS.md, CLOUD.md, PRD.md, DESIGN.md, DATABASE.md, and ROADMAP.md. Preserve the selected lesson workspace design. All five campaign rooms are implemented. The cloud target is codex-dev; use DATABASE_TRANSPORT=neon-websocket because this executor has HTTPS access without PostgreSQL TCP grants. Review the latest verification record, then continue the earliest unfinished milestone. Query history persistence and final release acceptance remain separate work. Keep production deployment explicit and credentials outside Git.
+Continue API Contract Escape Room from this repository. Read AGENTS.md, CLOUD.md, PRD.md, DESIGN.md, DATABASE.md, and ROADMAP.md. Preserve the selected lesson workspace design. All five campaign rooms are implemented. The cloud target is codex-dev; use DATABASE_TRANSPORT=neon-websocket because this executor has HTTPS access without PostgreSQL TCP grants. Review the latest verification record, then continue the earliest unfinished milestone. Query history persistence is implemented; use the current milestone verification record before continuing final release acceptance. Keep production deployment explicit and credentials outside Git.
 
 ## References
 
