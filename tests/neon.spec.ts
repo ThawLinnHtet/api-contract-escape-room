@@ -268,6 +268,7 @@ test('a player can finish all five rooms through the visible contracts', async (
     await page.screenshot({ path: `${process.env.UI_SCREENSHOT_DIR}/completion-desktop.png`, fullPage: true });
     await page.setViewportSize({ width: 360, height: 900 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expect(page.getByRole('button', { name: 'The Locked Gateway: Solved', exact: true }).locator('strong')).not.toBeVisible();
     await page.screenshot({ path: `${process.env.UI_SCREENSHOT_DIR}/completion-mobile.png`, fullPage: true });
     await page.setViewportSize({ width: 1440, height: 1000 });
   }
@@ -353,6 +354,7 @@ test('network retries retain request identity and failed history saves keep the 
   await expect(page.getByText('1 query response is not saved.', { exact: false })).toBeVisible();
   await page.getByRole('button', { name: 'History', exact: true }).click();
   await expect(page.getByText('Query · not saved', { exact: true })).toBeVisible();
+  await expect(send).toBeEnabled();
   if (process.env.UI_SCREENSHOT_DIR) {
     await page.screenshot({ path: `${process.env.UI_SCREENSHOT_DIR}/history-recovery-desktop.png`, fullPage: true });
     await page.setViewportSize({ width: 360, height: 900 });

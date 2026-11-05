@@ -40,7 +40,7 @@ Query results now persist through the separate `game.recordQuery` mutation, with
 
 ## Milestone 3 verification
 
-On 2026-11-05, all nine browser/API tests passed in 8.3 minutes against `codex-dev`. The suite verifies all 15 hint levels and repeat disclosure, 20-entry history pagination, query-history retry identity and isolation, bounded display payloads, a completed recap after reload, and actual browser network failures. A lost mutation response was retried with the same request body; failed query-history saving preserved the local response and recovered without reissuing the query. Restart clears the active history and rejects old-run saves. Strict typecheck and production build passed. No migration was required.
+On 2026-11-05, all nine browser/API tests passed in 8.3 minutes against `codex-dev`. The suite verifies all 15 hint levels and repeat disclosure, 20-entry history pagination, query-history retry identity and isolation, bounded display payloads, a completed recap after reload, and actual browser network failures. A mobile selector fix keeps solved room labels compact when check marks are present. A lost mutation response was retried with the same request body; failed query-history saving preserved the local response and recovered without reissuing the query. Restart clears the active history and rejects old-run saves. Strict typecheck and production build passed. No migration was required.
 
 ```bash
 BASE_URL=http://127.0.0.1:3103 PLAYWRIGHT_BROWSERS_PATH=/tmp/pw-browsers UI_SCREENSHOT_DIR=/workspace/artifacts/milestone-3 npm run test:e2e

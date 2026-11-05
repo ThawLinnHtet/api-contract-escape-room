@@ -161,7 +161,7 @@ dialog p { color: var(--text-muted); font-size: 14px; }
   .room-list li { min-width: 0; flex: 1; }
   .room-item { padding: 9px 3px; min-height: 48px; justify-content: center; margin: 0; }
   .room-number { padding: 0; align-self: auto; }
-  .room-item > span:last-child { display: none; }
+  .room-item > span:nth-child(2) { display: none; }
   .mission { margin-top: 28px; }
   .inventory { margin-top: 24px; }
   .hint-section { margin-top: 24px; }
