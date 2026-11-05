@@ -44,8 +44,9 @@
     "build": "prisma generate && next build",
     "dev": "next dev",
     "test:e2e": "playwright test",
-    "check:secrets": "node scripts/check-staged-secrets.mjs",
-    "db:deploy:websocket": "tsx scripts/migrate-websocket.ts"
+    "check:secrets": "tsx scripts/check-staged-secrets.ts",
+    "db:deploy:websocket": "tsx scripts/migrate-websocket.ts",
+    "db:inspect": "tsx scripts/inspect-db.ts"
   },
   "allowScripts": {
     "prisma@7.10.1": true,

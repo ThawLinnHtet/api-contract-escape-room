@@ -46,7 +46,7 @@ Hint disclosure accepts a requested level. The server rejects skipped levels and
 ```bash
 npm run db:generate
 npm run db:deploy
-node scripts/inspect-db.mjs
+npm run db:inspect
 ```
 
 Generation does not apply migrations. Deployment uses committed migration files through the direct connection. Inspection prints only the table names in the application's own schema.
