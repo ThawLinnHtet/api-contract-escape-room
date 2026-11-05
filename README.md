@@ -56,3 +56,7 @@ Install the appropriate Playwright browser first: Windows tests use installed Ch
 - [DATABASE.md](DATABASE.md): database connection and migration decisions.
 - [ROADMAP.md](ROADMAP.md): implementation milestones and exit criteria.
 - [AGENTS.md](AGENTS.md): instructions for coding agents.
+
+## Repository source and language statistics
+
+The game, server, tests, and project utilities are TypeScript. Installed third-party design tools under `.agents/skills` are retained for the Mobbin/Impeccable workflow and marked as vendored in `.gitattributes`, so their JavaScript and HTML do not dominate GitHub’s language summary. Build output, generated Prisma code, dependencies, local credentials, and test artifacts are ignored by Git. GitHub recalculates its summary after changes reach the default branch.

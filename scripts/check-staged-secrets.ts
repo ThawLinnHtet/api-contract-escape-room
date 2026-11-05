@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 const staged = execFileSync('git', ['diff', '--cached', '--name-only', '--diff-filter=ACMR', '-z'], { encoding: 'utf8' }).split('\0').filter(Boolean);
 const credentials = ['.env.local', '.env'].filter(existsSync).flatMap(path => {
   const env = dotenv.parse(readFileSync(path));
-  return ['DATABASE_URL', 'DATABASE_URL_UNPOOLED'].map(key => env[key]).filter(value => value && value.length > 25 && !value.includes('<'));
+  return ['DATABASE_URL', 'DATABASE_URL_UNPOOLED'].map(key => env[key]).filter((value): value is string => typeof value === 'string' && value.length > 25 && !value.includes('<'));
 });
 
 const failures = [];
