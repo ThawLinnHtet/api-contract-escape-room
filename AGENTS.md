@@ -6,7 +6,7 @@
 - Read DESIGN.md before implementing UI, responsive layout, or interaction states. Preserve the selected lesson workspace structure and distinguish proposed tokens from visually verified decisions.
 - Read DATABASE.md before configuring Prisma, database connections, migrations, or database-backed tests. Neon PostgreSQL is the selected database.
 - Read ROADMAP.md before starting a milestone. Implement the earliest unfinished dependency first unless the user requests a specific change.
-- Read CLOUD.md when preparing or continuing a cloud chat, configuring environment variables, or verifying Mobbin access. Inspect the actual app and package scripts; the gateway implementation exists and the remaining rooms are planned.
+- Read CLOUD.md when preparing or continuing a cloud chat, configuring environment variables, or verifying Mobbin access. Inspect the actual app and package scripts; the complete campaign is implemented; use CLOUD.md and ROADMAP.md for verified status and remaining work.
 
 ## Project skills
 

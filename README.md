@@ -6,7 +6,7 @@ A browser puzzle game for learning typed API interactions and building with tRPC
 
 All five rooms are implemented: gateway validation, identity clearance, paginated archive recovery, ordered power startup, and final restoration. Next.js serves the lesson workspace and typed tRPC request console. Prisma persists session-scoped progress, earned artifacts, mutation history, hints, and completion in Neon PostgreSQL.
 
-Milestones 1 and 2 are verified against the isolated `codex-dev` branch. All seven browser/API tests pass; see CLOUD.md for its verification record. Query history persistence and the remaining Milestone 3/4 acceptance work are tracked separately in ROADMAP.md.
+Milestones 1 through 3 are verified against the isolated `codex-dev` branch. All nine browser/API tests pass; see CLOUD.md for its verification record. Query responses are saved through a separate bounded history mutation. If saving fails, the response remains visible and can be saved again without reissuing the query. The completion recap uses persisted run timestamps, hint totals, and saved request counts. Release acceptance work is tracked in ROADMAP.md.
 
 ## Local setup
 

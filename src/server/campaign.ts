@@ -8,7 +8,7 @@ import type { Prisma } from '@/generated/prisma/client';
 
 type Tx = Prisma.TransactionClient;
 export type Outcome = { outcome: 'INCORRECT' | 'PROGRESS' | 'SOLVED' | 'ALREADY_APPLIED'; message: string; data?: { artifact?: string; activated?: string[]; completedAt?: string } };
-const switches = ['cooling', 'core', 'uplink'];
+const switches: Array<'cooling' | 'core' | 'uplink'> = ['cooling', 'core', 'uplink'];
 const token = (runId: string, value: string) => createHash('sha256').update(`${runId}:${value}`).digest('hex').slice(0, 32);
 export async function requireRoom(tx: Tx, runId: string, room: RoomId) {
   const index = roomIds.indexOf(room);
@@ -53,7 +53,7 @@ export async function mutateCampaign(sessionId: string, payload: { runId: string
     const artifactKinds: Partial<Record<RoomId, string>> = { identity: 'vault-seal', archive: 'maintenance-key', power: 'power-checksum' };
     const kind = artifactKinds[room];
     let result: Outcome;
-    const completedSwitch = room === 'power' && switches.indexOf(payload.input.switchId) < run.revision;
+    const completedSwitch = room === 'power' && switches.findIndex(id => id === payload.input.switchId) < run.revision;
     if (run.rooms.find(r => r.roomId === room)?.solvedAt || completedSwitch) {
       result = { outcome: 'ALREADY_APPLIED', message: 'This operation is already applied. Your progress is unchanged.', data: room === 'control' ? { completedAt: run.completedAt!.toISOString() } : { ...(kind && earned(kind) ? { artifact: earned(kind) } : {}), ...(room === 'power' ? powerStatus(run.revision) : {}) } };
     } else {

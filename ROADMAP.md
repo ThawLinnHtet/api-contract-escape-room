@@ -1,6 +1,6 @@
 # Implementation roadmap
 
-Work in order. Each milestone ends with observable behavior; mark it complete only after its exit checks pass. Milestone 1 is complete and verified on the isolated `codex-dev` Neon branch. Milestone 2 is also complete; continue with Milestone 3.
+Work in order. Each milestone ends with observable behavior; mark it complete only after its exit checks pass. Milestone 1 is complete and verified on the isolated `codex-dev` Neon branch. Milestones 2 and 3 are also complete; continue with Milestone 4.
 
 ## Milestone 1 — Playable gateway
 
@@ -30,13 +30,15 @@ Verified 2026-11-05 on `codex-dev`: all seven browser/API tests passed (4.1 minu
 
 ## Milestone 3 — Recovery and learning support
 
-- [ ] Add the three-step persisted hint ladder for every room.
-- [ ] Add inventory and persistent paginated request history, including query history recording.
-- [ ] Add restart confirmation, fresh run creation, and stale-run rejection.
-- [ ] Add completion recap, server-based elapsed time, and room explanations.
-- [ ] Handle pending, validation, network failure, and retry states.
+- [x] Add the three-step persisted hint ladder for every room.
+- [x] Add inventory and persistent paginated request history, including query history recording.
+- [x] Add restart confirmation, fresh run creation, and stale-run rejection.
+- [x] Add completion recap, server-based elapsed time, and room explanations.
+- [x] Handle pending, validation, network failure, and retry states.
 
 Exit: refresh and retries preserve the specified experience. Restart creates an isolated game. The recap and persisted history agree with server state; history cannot influence puzzle completion.
+
+Verified 2026-11-05 on `codex-dev`: all nine browser/API tests passed (8.3 minutes). Coverage includes every room’s three persisted hint levels, duplicate hint reveals, paginated query history, forged-history isolation, completed recap counts/time after reload, lost-response retries, query-history save failure/recovery, and restart. Strict typecheck and production build passed.
 
 ## Milestone 4 — Finish and verify
 

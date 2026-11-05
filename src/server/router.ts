@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { router, protectedProcedure } from './trpc';
 import { gatewayHints, unlockGateway } from './gateway';
 import { lockActiveRun } from './session';
+import { queryHistoryInput } from '@/shared/history';
+import { recordQuery } from './history';
 import { schemas, roomIds } from '@/shared/campaign';
 import { mutateCampaign, readRoom, searchArchive, powerStatus, requireRoom } from './campaign';
 
@@ -47,6 +49,7 @@ export const appRouter = router({
     }).strict()).mutation(({ ctx, input }) => unlockGateway(ctx.sessionId, input)),
   }),
   game: router({
+    recordQuery: protectedProcedure.input(queryHistoryInput).mutation(({ ctx, input }) => recordQuery(ctx.sessionId, input)),
     progress: protectedProcedure.query(async ({ ctx }) => {
       const session = await ctx.db.guestSession.findUnique({
         where: { id: ctx.sessionId },
@@ -54,6 +57,7 @@ export const appRouter = router({
           id: true, startedAt: true, completedAt: true,
           rooms: { select: { roomId: true, solvedAt: true, hintLevel: true } },
           artifacts: { select: { kind: true, value: true } },
+          _count: { select: { attempts: true } },
         } } },
       });
       if (!session?.activeRun) throw new TRPCError({ code: 'NOT_FOUND', message: 'No active game. Start a guest game.' });
@@ -62,6 +66,8 @@ export const appRouter = router({
         id: run.id, startedAt: run.startedAt.toISOString(), completedAt: run.completedAt?.toISOString() ?? null,
         rooms: run.rooms.map(room => ({ ...room, solvedAt: room.solvedAt?.toISOString() ?? null })),
         artifacts: run.artifacts,
+        hintsUsed: run.rooms.reduce((sum, room) => sum + room.hintLevel, 0),
+        requestCount: run._count.attempts,
         hints: gatewayHints.slice(0, run.rooms.find(room => room.roomId === 'gateway')?.hintLevel ?? 0),
         roomHints: Object.fromEntries(roomIds.map(id => [id, roomHints[id].slice(0, run.rooms.find(r => r.roomId === id)?.hintLevel ?? 0)])),
       };
@@ -78,17 +84,19 @@ export const appRouter = router({
       const attempts = await ctx.db.requestAttempt.findMany({
         where: { runId: input.runId }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: 21,
         ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
-        select: { id: true, procedure: true, input: true, response: true, createdAt: true, durationMs: true },
+        select: { id: true, procedure: true, input: true, response: true, createdAt: true, durationMs: true, source: true },
       });
       const hasMore = attempts.length > 20;
       const items = attempts.slice(0, 20).map(attempt => ({ ...attempt, createdAt: attempt.createdAt.toISOString() }));
       return { items, nextCursor: hasMore ? items.at(-1)!.id : null };
     }),
-    hint: protectedProcedure.input(runInput.extend({ roomId: z.enum(roomIds).default('gateway') })).mutation(({ ctx, input }) => ctx.db.$transaction(async tx => {
+    hint: protectedProcedure.input(runInput.extend({ roomId: z.enum(roomIds).default('gateway'), level: z.number().int().min(1).max(3).optional() })).mutation(({ ctx, input }) => ctx.db.$transaction(async tx => {
       await lockActiveRun(tx, ctx.sessionId, input.runId);
       await requireRoom(tx, input.runId, input.roomId);
       const room = await tx.roomProgress.upsert({ where: { runId_roomId: { runId: input.runId, roomId: input.roomId } }, create: { runId: input.runId, roomId: input.roomId }, update: {} });
-      const level = Math.min(3, room.hintLevel + 1);
+      const level = input.level ?? Math.min(3, room.hintLevel + 1);
+      if (level > room.hintLevel + 1) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Reveal the preceding hint first.' });
+      if (level <= room.hintLevel) return roomHints[input.roomId].slice(0, room.hintLevel);
       await tx.roomProgress.update({ where: { id: room.id }, data: { hintLevel: level } });
       return roomHints[input.roomId].slice(0, level);
     })),

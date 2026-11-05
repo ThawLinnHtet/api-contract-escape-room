@@ -131,21 +131,33 @@ test('gateway validation and incorrect answers preserve unsolved state', async (
 });
 
 test('campaign enforces locks, scoped evidence, pagination, atomic power and stable completion', async ({ context, browser }) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   const client = await api(context);
   const { id: runId } = await client.game.progress.query();
   const meta = () => ({ runId, requestId: randomUUID() });
+  async function hints(roomId: 'gateway' | 'identity' | 'archive' | 'power' | 'control') {
+    await expect(client.game.hint.mutate({ runId, roomId, level: 3 })).rejects.toMatchObject({ data: { code: 'BAD_REQUEST' } });
+    for (const level of [1, 2, 3]) {
+      const revealed = await client.game.hint.mutate({ runId, roomId, level });
+      expect(revealed).toHaveLength(level);
+    }
+    expect(await client.game.hint.mutate({ runId, roomId, level: 3 })).toHaveLength(3);
+    expect((await client.game.progress.query()).roomHints[roomId]).toHaveLength(3);
+  }
+  await hints('gateway');
   await expect(client.identity.status.query({ runId })).rejects.toMatchObject({ data: { code: 'FORBIDDEN' } });
   await expect(client.archive.search.query({ runId, tag: 'maintenance' })).rejects.toMatchObject({ data: { code: 'FORBIDDEN' } });
   await expect(client.power.activate.mutate({ ...meta(), input: { switchId: 'cooling' } })).rejects.toMatchObject({ data: { code: 'FORBIDDEN' } });
   await expect(client.control.restore.mutate({ ...meta(), input: { vaultSeal: 'fake', maintenanceKey: 'fake', powerChecksum: 'fake' } })).rejects.toMatchObject({ data: { code: 'FORBIDDEN' } });
   const gateway = await client.gateway.unlock.mutate({ ...meta(), input: { accessCode: '1991' } });
+  await hints('identity');
   expect((await client.identity.status.query({ runId })).clearance).toBe('guest');
   expect((await client.identity.claim.mutate({ ...meta(), input: { credential: 'fake' } })).outcome).toBe('INCORRECT');
   const vault = await client.identity.claim.mutate({ ...meta(), input: { credential: gateway.data!.artifact } });
   expect((await client.identity.status.query({ runId })).clearance).toBe('archivist');
   const before = (await client.game.history.query({ runId })).items.length;
   await expect(client.archive.search.query({ runId, tag: 'BAD TAG' })).rejects.toMatchObject({ data: { code: 'BAD_REQUEST' } });
+  await hints('archive');
   const page1 = await client.archive.search.query({ runId, tag: 'maintenance' });
   expect(page1.records).toHaveLength(3);
   expect(page1.nextCursor).toBeTruthy();
@@ -157,6 +169,7 @@ test('campaign enforces locks, scoped evidence, pagination, atomic power and sta
   expect((await client.archive.recover.mutate({ ...meta(), input: { recordId: page1.records[0].id } })).outcome).toBe('INCORRECT');
   const keyRecord = page2.records.find(r => r.title === 'Emergency maintenance key')!;
   const maintenance = await client.archive.recover.mutate({ ...meta(), input: { recordId: keyRecord.id } });
+  await hints('power');
   expect((await client.power.activate.mutate({ ...meta(), input: { switchId: 'uplink' } })).outcome).toBe('INCORRECT');
   expect((await client.power.status.query({ runId })).activated).toEqual([]);
   const cooling = { ...meta(), input: { switchId: 'cooling' as const } };
@@ -176,6 +189,8 @@ test('campaign enforces locks, scoped evidence, pagination, atomic power and sta
   const input = { vaultSeal: vault.data!.artifact!, maintenanceKey: maintenance.data!.artifact!, powerChecksum: power.data!.artifact! };
   expect((await client.control.restore.mutate({ ...meta(), input: { ...input, vaultSeal: 'wrong' } })).outcome).toBe('INCORRECT');
   expect((await client.game.progress.query()).completedAt).toBeNull();
+  await hints('control');
+  expect((await client.game.progress.query()).hintsUsed).toBe(15);
   const completion = { ...meta(), input };
   const restored = await client.control.restore.mutate(completion);
   expect(restored.outcome).toBe('SOLVED');
@@ -208,7 +223,7 @@ test('a player can finish all five rooms through the visible contracts', async (
     await editor.fill(JSON.stringify(input, null, 2));
     await send.click();
     await expect(page.getByTestId('response-json')).toContainText(`"outcome": "${outcome}"`);
-    await expect(send).toBeEnabled();
+    if (!('vaultSeal' in input)) await expect(send).toBeEnabled();
   }
   async function artifact(label: string) {
     return page.locator('.artifact').filter({ has: page.getByText(label, { exact: true }) }).locator('code').innerText();
@@ -222,6 +237,8 @@ test('a player can finish all five rooms through the visible contracts', async (
     await page.screenshot({ path: `${process.env.UI_SCREENSHOT_DIR}/gateway-mobile.png`, fullPage: true });
     await page.setViewportSize({ width: 1440, height: 1000 });
   }
+  await page.getByRole('button', { name: 'Reveal hint 1 of 3', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Reveal hint 2 of 3', exact: true })).toBeEnabled();
   await submit({ accessCode: '1991' }, 'SOLVED');
   await page.getByRole('button', { name: 'Continue to Identity Vault', exact: true }).click();
   await page.getByLabel('Procedure', { exact: true }).selectOption('identity.claim');
@@ -244,7 +261,119 @@ test('a player can finish all five rooms through the visible contracts', async (
   await submit({ vaultSeal: await artifact('Vault seal'), maintenanceKey: await artifact('Maintenance key'), powerChecksum: await artifact('Power checksum') }, 'SOLVED');
   await expect(page.getByText('5 of 5 rooms solved', { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'You’re out.' })).toBeVisible();
-  if (process.env.UI_SCREENSHOT_DIR) await page.screenshot({ path: `${process.env.UI_SCREENSHOT_DIR}/completion-desktop.png`, fullPage: true });
+  await expect(page.locator('.recap-facts > div').filter({ hasText: 'Hints used' }).locator('dd')).toHaveText('1');
+  await expect(page.locator('.recap-facts > div').filter({ hasText: 'Requests saved' }).locator('dd')).toHaveText('9');
+  const finishedTime = await page.getByTestId('completion-time').innerText();
+  if (process.env.UI_SCREENSHOT_DIR) {
+    await page.screenshot({ path: `${process.env.UI_SCREENSHOT_DIR}/completion-desktop.png`, fullPage: true });
+    await page.setViewportSize({ width: 360, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expect(page.getByRole('button', { name: 'The Locked Gateway: Solved', exact: true }).locator('strong')).not.toBeVisible();
+    await page.screenshot({ path: `${process.env.UI_SCREENSHOT_DIR}/completion-mobile.png`, fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
   await page.reload();
   await expect(page.getByText('5 of 5 rooms solved', { exact: true })).toBeVisible();
+  await expect(page.getByTestId('completion-time')).toHaveText(finishedTime);
+  await page.getByRole('button', { name: 'Review request history', exact: true }).click();
+  await expect(page.locator('.history-entry')).toHaveCount(9);
+});
+
+test('query history is bounded, paginated and isolated from gameplay evidence', async ({ context, browser }) => {
+  test.setTimeout(300_000);
+  const client = await api(context);
+  const { id: runId } = await client.game.progress.query();
+  await client.gateway.unlock.mutate({ runId, requestId: randomUUID(), input: { accessCode: '1991' } });
+  const record = { runId, requestId: randomUUID(), procedure: 'identity.status' as const, input: {}, data: { clearance: 'archivist' as const }, durationMs: 12 };
+  const [a, b] = await Promise.all([client.game.recordQuery.mutate(record), client.game.recordQuery.mutate(record)]);
+  expect(a).toEqual(b);
+  expect((await client.game.history.query({ runId })).items).toHaveLength(2);
+  expect((await client.identity.status.query({ runId })).clearance).toBe('guest');
+  await expect(client.archive.search.query({ runId, tag: 'maintenance' })).rejects.toMatchObject({ data: { code: 'FORBIDDEN' } });
+  await expect(client.game.recordQuery.mutate({ ...record, durationMs: 13 })).rejects.toMatchObject({ data: { code: 'CONFLICT' } });
+  // A fresh history ID still cannot impersonate a puzzle mutation or store arbitrary fields.
+  await expect(client.game.recordQuery.mutate({ ...record, requestId: randomUUID(), procedure: 'gateway.unlock' as 'identity.status' })).rejects.toMatchObject({ data: { code: 'BAD_REQUEST' } });
+  const oversized = { ...record, requestId: randomUUID(), data: { clearance: 'x'.repeat(9000) as 'archivist' } };
+  await expect(client.game.recordQuery.mutate(oversized)).rejects.toMatchObject({ data: { code: 'BAD_REQUEST' } });
+  // More than 20 entries exercise the real timestamp/id pagination boundary.
+  for (let i = 0; i < 20; i += 2) await Promise.all([0, 1].map(() => client.game.recordQuery.mutate({ ...record, requestId: randomUUID() })));
+  const latest = await client.game.history.query({ runId });
+  expect(latest.items).toHaveLength(20);
+  expect(latest.items.every(item => item.source === 'query')).toBe(true);
+  const older = await client.game.history.query({ runId, cursor: latest.nextCursor! });
+  expect(older.items).toHaveLength(2);
+  expect(older.nextCursor).toBeNull();
+  expect(new Set([...latest.items, ...older.items].map(item => item.id)).size).toBe(22);
+  expect((await client.game.progress.query()).requestCount).toBe(22);
+  expect((await client.game.progress.query()).rooms.filter(room => room.solvedAt)).toHaveLength(1);
+  const other = await browser.newContext();
+  try {
+    const stranger = await api(other);
+    await expect(stranger.game.recordQuery.mutate({ ...record, requestId: randomUUID() })).rejects.toMatchObject({ data: { code: 'FORBIDDEN' } });
+    const otherRun = await stranger.game.progress.query();
+    await expect(stranger.game.history.query({ runId: otherRun.id, cursor: latest.items[0].id })).rejects.toMatchObject({ data: { code: 'BAD_REQUEST' } });
+  } finally { await other.close(); }
+  await client.game.restart.mutate({ runId });
+  await expect(client.game.recordQuery.mutate(record)).rejects.toMatchObject({ data: { code: 'FORBIDDEN' } });
+  const fresh = await client.game.progress.query();
+  expect(fresh.requestCount).toBe(0);
+  expect(fresh.hintsUsed).toBe(0);
+  expect(fresh.artifacts).toHaveLength(0);
+});
+
+test('network retries retain request identity and failed history saves keep the query visible', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Start guest game', exact: true }).click();
+  const send = page.getByRole('button', { name: 'Send request', exact: true });
+  const editor = page.getByLabel('JSON input', { exact: true });
+  await expect(send).toBeEnabled();
+  const payloads: string[] = [];
+  let loseResponse = true;
+  await page.route('**/api/trpc/gateway.unlock', async route => {
+    payloads.push(route.request().postData()!);
+    if (loseResponse) { loseResponse = false; await route.fetch(); await route.abort(); }
+    else await route.continue();
+  });
+  await editor.fill('{ "accessCode": "1991" }');
+  await send.click();
+  await expect(page.locator('#request-error')).toBeVisible();
+  await expect(editor).toHaveValue('{ "accessCode": "1991" }');
+  await send.click();
+  await expect(page.getByTestId('response-json')).toContainText('SOLVED');
+  expect(payloads).toHaveLength(2);
+  expect(payloads[0]).toBe(payloads[1]);
+  await expect(send).toBeEnabled();
+  await page.getByRole('button', { name: 'Continue to Identity Vault', exact: true }).click();
+  let failSave = true;
+  let queryCalls = 0;
+  page.on('request', request => { if (request.url().includes('/api/trpc/identity.status')) queryCalls++; });
+  await page.route('**/api/trpc/game.recordQuery', async route => failSave ? route.abort() : route.continue());
+  await send.click();
+  await expect(page.getByTestId('response-json')).toContainText('guest');
+  await expect(page.getByText('1 query response is not saved.', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: 'History', exact: true }).click();
+  await expect(page.getByText('Query · not saved', { exact: true })).toBeVisible();
+  await expect(send).toBeEnabled();
+  if (process.env.UI_SCREENSHOT_DIR) {
+    await page.screenshot({ path: `${process.env.UI_SCREENSHOT_DIR}/history-recovery-desktop.png`, fullPage: true });
+    await page.setViewportSize({ width: 360, height: 900 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: `${process.env.UI_SCREENSHOT_DIR}/history-recovery-mobile.png`, fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
+  failSave = false;
+  await page.getByRole('button', { name: 'Retry saving history', exact: true }).click();
+  await expect(page.getByText('Query · not saved', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Query · recorded response', { exact: true })).toBeVisible();
+  expect(queryCalls).toBe(1);
+  await page.reload();
+  await page.getByRole('button', { name: 'History', exact: true }).click();
+  await expect(page.locator('.history-entry')).toHaveCount(2);
+  await expect(page.getByText('Query · recorded response', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Restart game', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Restart game', exact: true }).click();
+  await expect(page.getByText('0 of 5 rooms solved', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'History', exact: true }).click();
+  await expect(page.locator('.history-entry')).toHaveCount(0);
 });

@@ -82,10 +82,18 @@ Inspect a typical room, a long contract, multiline JSON, validation feedback, a 
 
 ## Current boundary
 
-The layout reference is selected. Tokens, exact panel proportions, and component styling are proposed implementation defaults. The gateway screen exists in code; no completed visual QA result is claimed by this document.
+The selected layout and palette are implemented. The recorded desktop and narrow-screen captures verify the shown states. Full keyboard, contrast, and release acceptance checks remain tracked in Milestone 4.
 
 ## Campaign implementation check — 2026-11-05
 
 Retained the three-pane lesson workspace and existing palette. Compact room rows bring the clue into the desktop viewport. Locked rooms are disabled with explicit labels; solved rooms retain navigation and gain check marks. Each room has its own allowlisted procedures, public contracts, and input templates. A successful solve offers Continue without replacing the response. Completion shows saved elapsed time and a brief explanation of each room’s API concept. Inventory values remain selectable. At 360px, navigation becomes a five-step row and the content stacks without page overflow.
 
 Rendered evidence is saved under `/workspace/artifacts/milestone-2` in this cloud workspace. These captures verify the shown states, not a completed release audit.
+
+## Recovery and recap implementation — 2026-11-05
+
+The Milestone 3 changes follow the existing reference roles: Codecademy keeps the room brief beside the workspace; Postman keeps procedure selection, contracts, editing, and explicit submission together; Vapi informs expandable history rows; Railway informs the retained dark surfaces and fine separators. No new Mobbin search or imported component library is claimed for this pass. Impeccable guidance was read from the installed skill, including its polish and craft-floor references; the unavailable context launcher was handled by reading project context directly.
+
+Query history uses the same expandable rows as mutation history, with explicit Query labels. A failed save leaves the response visible, adds a not-saved row, and offers Retry saving history without rerunning the query. On completion, the editor pane becomes a recap with plain label/value rows for rooms restored, elapsed time, hints used, and saved requests. The inspector and room navigation remain available for reviewing the run. These additions reuse the existing tokens, typography, controls, and separators.
+
+Milestone 3 rendered evidence is under `/workspace/artifacts/milestone-3`: completion and history-recovery screens are captured on desktop and at 360px. The completion brief reflects the restored state, and the hint control returns when a solved room is revisited. Final browser checks verify recap counts/time after reload and query-history recovery without reissuing the query.
